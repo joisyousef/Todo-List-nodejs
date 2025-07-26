@@ -1,0 +1,6 @@
+#cloud-config
+users:
+  - name: fedora
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh-authorized-keys:
+      - ssh-rsa AAAA…your-public-key… user@host

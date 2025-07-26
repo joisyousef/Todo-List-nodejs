@@ -1,0 +1,6 @@
+---
+- name: Complete Server Setup
+  hosts: web_servers
+  become: yes
+  roles:
+    - docker-setup
