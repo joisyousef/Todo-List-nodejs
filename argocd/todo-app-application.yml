@@ -1,3 +1,4 @@
+# argocd/todo-app-application.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -10,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/joisyousef/Todo-List-nodejs.git
     targetRevision: HEAD
-    path: app
+    path: k8s/app
   destination:
     server: https://kubernetes.default.svc
     namespace: todo-app
