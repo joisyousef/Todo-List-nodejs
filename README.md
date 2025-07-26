@@ -1,8 +1,6 @@
 # DevOps Internship Assessment - Todo Application
 
 [![CI/CD Pipeline](https://github.com/joisyousef/Todo-List-nodejs/actions/workflows/ci.yml/badge.svg)](https://github.com/joisyousef/Todo-List-nodejs/actions)
-[![Docker Image](https://img.shields.io/docker/image-size/joisyousef/todo-app)](https://hub.docker.com/r/joisyousef/todo-app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 📋 Table of Contents
 
@@ -121,7 +119,6 @@ open http://localhost:3000
 The application is containerized using a multi-stage Docker build for optimization:
 
 ```dockerfile
-# Production-optimized build
 FROM node:16-alpine
 
 WORKDIR /app
@@ -152,12 +149,11 @@ CMD ["npm", "start"]
 
 GitHub Actions workflow automates:
 
-- ✅ Code quality checks (ESLint, tests)
-- ✅ Security scanning (Snyk, Trivy)
-- ✅ Multi-platform Docker builds
-- ✅ Image optimization and caching
-- ✅ Automated registry push
-- ✅ Deployment notifications
+- ✅ Code quality checks and testing
+- ✅ Multi-platform Docker builds (linux/amd64, linux/arm64)
+- ✅ Image optimization and caching with GitHub Actions cache
+- ✅ Automated registry push to Docker Hub
+- ✅ Proper image tagging and metadata
 
 **Pipeline Configuration:**
 
@@ -166,21 +162,55 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: todo-app
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Build Docker image
-        run: docker build -t joisyousef/todo-app:latest .
-      - name: Push to registry
-        run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker push joisyousef/todo-app:latest
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "16"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests (if you have any)
+        run: npm test --if-present
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            docker.io/${{ github.actor }}/todo-app:latest
+            docker.io/${{ github.actor }}/todo-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 ```
 
 ## 🔧 Part 2: Infrastructure as Code with Ansible
@@ -227,109 +257,91 @@ Custom cloud-init configuration used for VM bootstrap:
 
 ### Docker Compose Configuration
 
-Production-ready multi-service deployment:
+**Note**: Docker Compose is deployed on the EC2 instance for container orchestration:
 
 ```yaml
+# Deployed on AWS EC2 instance
 version: "3.8"
-
 services:
   todo-app:
     image: joisyousef/todo-app:latest
-    container_name: todo-app
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongo:27017/todolist
-    depends_on:
-      mongo:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - mongoDbUrl=mongodb://mongodb:27017/todolist
     restart: unless-stopped
-    networks:
-      - todo-network
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true" # This tells Watchtower to monitor this container
+    depends_on:
+      - mongodb
 
-  mongo:
+  mongodb:
     image: mongo:5.0
-    container_name: todo-mongo
-    ports:
-      - "27017:27017"
+    restart: unless-stopped
     volumes:
-      - mongo_data:/data/db
+      - mongodb_data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=todolist
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-    networks:
-      - todo-network
-    labels:
-      - "com.centurylinklabs.watchtower.enable=false"
-
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.docker/config.json:/config.json:ro # For private registry authentication
-    environment:
-      - WATCHTOWER_CLEANUP=true # Remove old images after update
-      - WATCHTOWER_POLL_INTERVAL=300                    )
-      - WATCHTOWER_LABEL_ENABLE=true
-      - WATCHTOWER_INCLUDE_STOPPED=false
-      - WATCHTOWER_DEBUG=true
-    restart: unless-stopped
-    networks:
-      - todo-network
 
 volumes:
-  mongo_data:
-
-networks:
-  todo-network:
-    driver: bridge
+  mongodb_data:
 ```
 
 ### Auto-Update Strategy
 
-**Selected Tool: Watchtower**
+**Implementation**: Auto-updates are handled through the CI/CD pipeline which automatically builds and pushes new images to Docker Hub when code is pushed to the master branch. The EC2 instance can then pull the latest images manually or through automated deployment scripts.
 
-**Justification:**
+**Pipeline Features:**
 
-- ✅ **Simplicity**: Minimal configuration required
-- ✅ **Reliability**: Proven in production environments
-- ✅ **Integration**: Native Docker Compose support
-- ✅ **Monitoring**: Built-in health checks and rollback
-- ✅ **Notifications**: Slack/email integration available
+- ✅ **Automated Builds**: Triggers on push to master branch
+- ✅ **Multi-platform Support**: Builds for linux/amd64 and linux/arm64
+- ✅ **Caching**: Uses GitHub Actions cache for faster builds
+- ✅ **Image Tagging**: Tags with both 'latest' and commit SHA
 
-**Alternative Considered:** Flux CD, but Watchtower better suits the Docker Compose requirement.
+**Deployment Process:**
+
+1. Developer pushes code to master branch
+2. GitHub Actions builds and pushes new Docker image
+3. Manual or scripted deployment pulls new image on EC2
+4. Services are restarted with updated containers
 
 ## ☸️ Part 4: Kubernetes & GitOps (Bonus)
 
 ### Kubernetes Deployment
 
-Production-grade Kubernetes manifests with:
+Production-grade Kubernetes manifests featuring:
+
+**Namespace Configuration:**
 
 ```yaml
-# Deployment features
-- Rolling updates with zero downtime
-- Resource limits and requests
-- Liveness and readiness probes
-- ConfigMap and Secret management
-- Horizontal Pod Autoscaling (HPA)
-- Network policies for security
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: todo-app
+  labels:
+    name: todo-app
 ```
+
+**Todo Application Deployment:**
+
+- ✅ 2 replica pods for high availability
+- ✅ Resource limits and requests (128Mi-256Mi memory, 100m-200m CPU)
+- ✅ Liveness and readiness probes on `/health` endpoint
+- ✅ Environment-specific configuration
+- ✅ LoadBalancer service for external access
+
+**MongoDB Deployment:**
+
+- ✅ Persistent storage with 1Gi PVC
+- ✅ Health checks with MongoDB ping commands
+- ✅ ClusterIP service for internal communication
+- ✅ Proper database initialization
+
+**Key Features:**
+
+- Port mapping: Application runs on port 4000 internally
+- Database: MongoDB with persistent volume
+- Service discovery: mongo-service DNS resolution
+- Image pull secrets for private registries
 
 ### ArgoCD Implementation
 
@@ -476,21 +488,15 @@ todo-devops-project/
 | `JWT_SECRET`      | Authentication secret     | -                                   | ✅       |
 | `DOCKER_REGISTRY` | Container registry URL    | `docker.io`                         | ❌       |
 
-### Security Configuration
-
-```bash
-# Generate secure secrets
-openssl rand -base64 32  # JWT_SECRET
-openssl rand -hex 16     # Database password
-```
-
 ## 📊 Monitoring & Health Checks
 
 ### Application Health Endpoints
 
-- **Health Check**: `GET /health` - Basic application status
-- **Ready Check**: `GET /ready` - Database connectivity
-- **Metrics**: `GET /metrics` - Prometheus-compatible metrics
+**Note**: Health check endpoint implementation status depends on your application code.
+
+- **Health Check**: `GET /health` - Basic application status (if implemented)
+- **Application Status**: Monitor via Docker container health checks
+- **Database**: MongoDB connection verified through application startup
 
 ### Container Health Monitoring
 
@@ -507,20 +513,20 @@ healthcheck:
 ### Kubernetes Probes
 
 ```yaml
-# Liveness and readiness probes
+# Actual implementation in k8s manifests
 livenessProbe:
   httpGet:
     path: /health
-    port: 3000
+    port: 4000
   initialDelaySeconds: 30
-  periodSeconds: 10
+  periodSeconds: 30
 
 readinessProbe:
   httpGet:
-    path: /ready
-    port: 3000
+    path: /health
+    port: 4000
   initialDelaySeconds: 5
-  periodSeconds: 5
+  periodSeconds: 10
 ```
 
 ## 🔒 Security Considerations
@@ -543,7 +549,6 @@ readinessProbe:
 
 ### Network Security
 
-- ✅ TLS encryption for external traffic
 - ✅ Network segmentation
 - ✅ Service-to-service authentication
 - ✅ Rate limiting and DDoS protection
@@ -640,8 +645,7 @@ docker system prune -a
 3. **Database**: MongoDB Atlas could be used for production scalability
 4. **Registry**: Docker Hub selected for simplicity; production would use private registry
 5. **Network**: Application accessible on port 3000; production would use port 80/443
-6. **SSL/TLS**: Not implemented in demo; would be required for production
-7. **Monitoring**: Basic health checks implemented; full observability stack recommended for production
+6. **Monitoring**: Basic health checks implemented; full observability stack recommended for production
 
 ### Production Considerations
 
