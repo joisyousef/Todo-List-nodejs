@@ -8,10 +8,18 @@
   loop:
   - "4000/tcp"
   - "22/tcp"
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Ensure SSH service is running
   systemd:
     name: sshd
     state: started
     enabled: yes
+
+- name: Set proper permissions on application directory
+  file:
+    path: /opt/todo-app
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
