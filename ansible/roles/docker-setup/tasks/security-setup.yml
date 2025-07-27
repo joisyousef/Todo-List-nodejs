@@ -1,0 +1,17 @@
+---
+- name: Configure firewall for application
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+  - "4000/tcp"
+  - "22/tcp"
+  ignore_errors: yes
+
+- name: Ensure SSH service is running
+  systemd:
+    name: sshd
+    state: started
+    enabled: yes

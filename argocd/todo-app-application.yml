@@ -1,11 +1,8 @@
-# argocd/todo-app-application.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: todo-app
   namespace: argocd
-  finalizers:
-  - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
@@ -30,3 +27,8 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
+  # Add image updater annotations
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: todo-app=joisyousef/todo-app
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: master
