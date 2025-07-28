@@ -1,3 +1,5 @@
+# playbooks/site.yml
+---
 - name: Configure VM and Install Docker on Amazon Linux
   hosts: web_servers
   become: yes
