@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: todo-app
-        image: joisyousef/todo-app:latest
+        image: joisyousef/todo-app:${IMAGE_TAG}
         ports:
         - containerPort: 4000
         env:

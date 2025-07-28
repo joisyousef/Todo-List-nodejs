@@ -8,6 +8,8 @@ on:
 
 env:
   REGISTRY: docker.io
+  # Pull your Docker Hub username from a secret:
+  NAMESPACE: ${{ secrets.DOCKERHUB_USERNAME }}
   IMAGE_NAME: todo-app
 
 jobs:
@@ -32,6 +34,7 @@ jobs:
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
+    # Only on actual pushes to master (not PRs)
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
     - name: Checkout code
@@ -46,19 +49,23 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Extract metadata
+    - name: Extract metadata (tags & labels)
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ github.actor }}/${{ env.IMAGE_NAME }}
+        # Use your namespace explicitly
+        images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}
         tags: |
+          # Tag branch names for non-master
           type=ref,event=branch
-          type=sha,prefix={{branch}}-
+          # Tag commit SHA for immutability
+          type=sha,prefix=sha-
+          # Tag 'latest' on the default branch
           type=raw,value=latest,enable={{is_default_branch}}
         labels: |
           org.opencontainers.image.title=todo-app
           org.opencontainers.image.description=Node.js Todo Application
-          org.opencontainers.image.vendor=${{ github.actor }}
+          org.opencontainers.image.vendor=${{ env.NAMESPACE }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -71,7 +78,7 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Update deployment status
+    - name: Confirm image tags
       run: |
-        echo "Image pushed successfully!"
-        echo "Tags: ${{ steps.meta.outputs.tags }}"
+        echo "✅ Pushed image tags:"
+        echo "${{ steps.meta.outputs.tags }}"
