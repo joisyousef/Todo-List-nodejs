@@ -1,10 +1,13 @@
----
 docker_prerequisites:
   - git
   - curl
   - python3-pip
+  - htop
+  - vim
+  - wget
+  - unzip
 
 docker_packages:
   - docker
 
-package_manager: yum
+docker_compose_version: "2.21.0"
