@@ -8,9 +8,7 @@
   - [📋 Table of Contents](#-table-of-contents)
   - [🚀 Overview](#-overview)
   - [🏗️ Architecture](#️-architecture)
-  - [🛠️ Prerequisites](#️-prerequisites)
-  - [⚡ Quick Start](#-quick-start)
-  - [📦 Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
+  - [� Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
   - [🔧 Part 2: Infrastructure as Code with Ansible](#-part-2-infrastructure-as-code-with-ansible)
   - [🐳 Part 3: Container Orchestration \& Auto-Updates](#-part-3-container-orchestration--auto-updates)
   - [☸️ Part 4: Kubernetes \& GitOps (Bonus)](#️-part-4-kubernetes--gitops-bonus)
@@ -32,28 +30,48 @@ This repository contains a complete DevOps pipeline for the Node.js Todo applica
 
 ## 🏗️ Architecture
 
-```mermaid
 graph TB
-    A[Developer] -->|Git Push| B[GitHub Repository]
-    B -->|Webhook| C[GitHub Actions]
-    C -->|Build & Test| D[Docker Registry]
-    C -->|Deploy Config| E[Ansible Playbook]
-    E -->|Configure| F[AWS EC2 Instance]
-    F -->|Pull Images| D
-    F -->|Run Containers| G[Docker Compose]
-    G --> H[Todo Application]
-    G --> I[MongoDB Database]
-    J[Watchtower] -->|Monitor| D
-    J -->|Auto Update| G
+subgraph "Developer Cycle"
+A[Developer] -->|Push code| B[GitHub Repository]
+end
+subgraph "CI/CD"
+B -->|Trigger| C[GitHub Actions]
+C -->|Build/Test| D[Docker Registry]
+end
+subgraph "Infrastructure Provisioning"
+C -->|Invoke| E[Ansible Playbooks]
+E -->|Setup| F[AWS EC2 VM]
+end
+subgraph "Deployment - Docker Compose"
+F -->|Pull & Run| G[Docker Compose]
+G --> H[Todo App Container]
+G --> I[MongoDB Container]
+J[Watchtower] -->|Monitor & Update| G
+end
+subgraph "Deployment - Kubernetes (Bonus)"
+F --> K[K3s Cluster]
+K --> L[Todo App Pods]
+K --> M[MongoDB Pod]
+N[ArgoCD] -->|GitOps Sync| K
+end
 
-    subgraph "AWS Cloud"
-        F
-        G
-        H
-        I
-        J
+````mermaid
+graph TB
+    A[Developer] -->|push| B[GitHub Repo]
+    B --> C[GitHub Actions CI]
+    C --> D[Docker Hub]
+    C --> E[Ansible Provisioning]
+    E --> F[AWS EC2 Instance]
+    F --> G[Docker Compose]
+    G --> H[Todo App]
+    G --> I[MongoDB]
+    J[Watchtower] --> D
+    J --> G
+    subgraph Kubernetes (Bonus)
+      F2[K3s on VM] --> K[ArgoCD]
+      K --> L[Todo App Pods]
+      K --> M[MongoDB Pod]
     end
-```
 
 ## 🛠️ Prerequisites
 
@@ -95,7 +113,7 @@ http://<VM_IP>:4000
 # Bonus Part 4 (after setup)
 kubectl port-forward -n todo-app svc/todo-app-service 31159:80
 # then http://localhost:31159
-```
+````
 
 ---
 
