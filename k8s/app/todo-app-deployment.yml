@@ -6,7 +6,12 @@ metadata:
   labels:
     app: todo-app
 spec:
-  replicas: 3
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
       app: todo-app
@@ -20,32 +25,37 @@ spec:
         image: joisyousef/todo-app:latest
         ports:
         - containerPort: 4000
+          name: http
         env:
         - name: NODE_ENV
-          value: production
+          value: "production"
         - name: mongoDbUrl
-          value: mongodb://mongo-service:27017/todolist
+          value: "mongodb://mongo-service:27017/todolist"
         - name: PORT
           value: "4000"
         livenessProbe:
           httpGet:
-            path: /health
+            path: /
             port: 4000
           initialDelaySeconds: 30
           periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
+            path: /
             port: 4000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
         resources:
           requests:
             memory: "128Mi"
             cpu: "100m"
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "512Mi"
+            cpu: "500m"
       imagePullSecrets:
       - name: docker-registry-secret
 ---
@@ -58,6 +68,22 @@ spec:
   selector:
     app: todo-app
   ports:
-  - port: 80
+  - name: http
+    port: 80
     targetPort: 4000
-  type: LoadBalancer
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-app-nodeport
+  namespace: todo-app
+spec:
+  selector:
+    app: todo-app
+  ports:
+  - name: http
+    port: 80
+    targetPort: 4000
+    nodePort: 30000
+  type: NodePort

@@ -4,7 +4,7 @@ metadata:
   name: todo-app
   namespace: argocd
   annotations:
-    argocd-image-updater.argoproj.io/image-list: todo-app=joisyousef/todo-app:latest
+    argocd-image-updater.argoproj.io/image-list: todo-app=joisyousef/todo-app
     argocd-image-updater.argoproj.io/todo-app.update-strategy: latest
     argocd-image-updater.argoproj.io/todo-app.pull-secret: pullsecret:todo-app/docker-registry-secret
 spec:
@@ -20,14 +20,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-      allowEmpty: false
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
     syncOptions:
     - CreateNamespace=true
-    - PrunePropagationPolicy=foreground
-    - PruneLast=true
