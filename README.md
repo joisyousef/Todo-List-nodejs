@@ -8,7 +8,9 @@
   - [📋 Table of Contents](#-table-of-contents)
   - [🚀 Overview](#-overview)
   - [🏗️ Architecture](#️-architecture)
-  - [� Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
+  - [🛠️ Prerequisites](#️-prerequisites)
+  - [⚡ Quick Start](#-quick-start)
+  - [📦 Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
   - [🔧 Part 2: Infrastructure as Code with Ansible](#-part-2-infrastructure-as-code-with-ansible)
   - [🐳 Part 3: Container Orchestration \& Auto-Updates](#-part-3-container-orchestration--auto-updates)
   - [☸️ Part 4: Kubernetes \& GitOps (Bonus)](#️-part-4-kubernetes--gitops-bonus)
@@ -55,7 +57,7 @@ K --> M[MongoDB Pod]
 N[ArgoCD] -->|GitOps Sync| K
 end
 
-````mermaid
+```mermaid
 graph TB
     A[Developer] -->|push| B[GitHub Repo]
     B --> C[GitHub Actions CI]
@@ -67,11 +69,15 @@ graph TB
     G --> I[MongoDB]
     J[Watchtower] --> D
     J --> G
-    subgraph Kubernetes (Bonus)
-      F2[K3s on VM] --> K[ArgoCD]
-      K --> L[Todo App Pods]
-      K --> M[MongoDB Pod]
+
+    subgraph "Kubernetes (Bonus)"
+        F2[K3s on VM] --> K[ArgoCD]
+        K --> L[Todo App Pods]
+        K --> M[MongoDB Pod]
     end
+```
+
+This architecture diagram shows the flow of the application from development to deployment. It includes the following components:
 
 ## 🛠️ Prerequisites
 
@@ -113,7 +119,7 @@ http://<VM_IP>:4000
 # Bonus Part 4 (after setup)
 kubectl port-forward -n todo-app svc/todo-app-service 31159:80
 # then http://localhost:31159
-````
+```
 
 ---
 
