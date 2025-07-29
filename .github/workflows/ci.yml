@@ -8,7 +8,6 @@ on:
 
 env:
   REGISTRY: docker.io
-  # Pull your Docker Hub username from a secret:
   NAMESPACE: ${{ secrets.DOCKERHUB_USERNAME }}
   IMAGE_NAME: todo-app
 
@@ -34,7 +33,6 @@ jobs:
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
-    # Only on actual pushes to master (not PRs)
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
     - name: Checkout code
@@ -53,7 +51,6 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        # Use your namespace explicitly
         images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}
         tags: |
           # Tag branch names for non-master

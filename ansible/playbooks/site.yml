@@ -1,52 +1,53 @@
-# playbooks/site.yml
 ---
-- name: Configure VM and Install Docker on Amazon Linux
+- name: Install Docker and Docker Compose
   hosts: web_servers
   become: yes
-  gather_facts: yes
+  gather_facts: true
+
+  vars:
+    docker_compose_version: "2.21.0"
 
   tasks:
-    - name: Update yum package cache
-      yum:
-        update_cache: yes
-
-    - name: Install packages
-      yum:
-        name:
-          - docker
-          - git
-          - htop
-          - vim
-          - python3-pip
+    - name: Install Docker
+      package:
+        name: docker
         state: present
+      tags: docker
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+      tags: docker
 
     - name: Add ec2-user to docker group
       user:
         name: ec2-user
         groups: docker
         append: yes
+      tags: docker
 
-    - name: Enable and start Docker
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
-
-    - name: Install Docker Compose plugin
+    - name: Download Docker Compose
       get_url:
-        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-{{ ansible_architecture }}"
+        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-x86_64"
         dest: /usr/local/bin/docker-compose
         mode: '0755'
-        owner: root
-        group: root
+      tags: compose
 
-    - name: Ensure docker-compose is executable
-      file:
-        path: /usr/local/bin/docker-compose
-        mode: '0755'
-
-    - name: Symlink docker-compose into PATH
+    - name: Create symlink for docker-compose
       file:
         src: /usr/local/bin/docker-compose
         dest: /usr/bin/docker-compose
         state: link
+      tags: compose
+
+    - name: Print Docker and Docker Compose version
+      shell: |
+        docker --version
+        docker-compose --version
+      register: docker_versions
+
+    - name: Show installed versions
+      debug:
+        var: docker_versions.stdout_lines
