@@ -34,20 +34,24 @@ This repository contains a complete DevOps pipeline for the Node.js Todo applica
 
 ```mermaid
 graph TB
-    A[Developer] -->|push| B[GitHub Repo]
-    B --> C[GitHub Actions CI]
-    C --> D[Docker Hub]
-    C --> E[Ansible Provisioning]
-    E --> F[AWS EC2 Instance]
-    F --> G[Docker Compose]
-    G --> H[Todo App]
-    G --> I[MongoDB]
-    J[Watchtower] --> D
-    J --> G
-    subgraph Kubernetes (Bonus)
-      F2[K3s on VM] --> K[ArgoCD]
-      K --> L[Todo App Pods]
-      K --> M[MongoDB Pod]
+    A[Developer] -->|Git Push| B[GitHub Repository]
+    B -->|Webhook| C[GitHub Actions]
+    C -->|Build & Test| D[Docker Registry]
+    C -->|Deploy Config| E[Ansible Playbook]
+    E -->|Configure| F[AWS EC2 Instance]
+    F -->|Pull Images| D
+    F -->|Run Containers| G[Docker Compose]
+    G --> H[Todo Application]
+    G --> I[MongoDB Database]
+    J[Watchtower] -->|Monitor| D
+    J -->|Auto Update| G
+
+    subgraph "AWS Cloud"
+        F
+        G
+        H
+        I
+        J
     end
 ```
 
