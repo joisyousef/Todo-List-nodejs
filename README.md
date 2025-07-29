@@ -32,48 +32,40 @@ This repository contains a complete DevOps pipeline for the Node.js Todo applica
 
 ## 🏗️ Architecture
 
-graph TB
-subgraph "Developer Cycle"
-A[Developer] -->|Push code| B[GitHub Repository]
-end
-subgraph "CI/CD"
-B -->|Trigger| C[GitHub Actions]
-C -->|Build/Test| D[Docker Registry]
-end
-subgraph "Infrastructure Provisioning"
-C -->|Invoke| E[Ansible Playbooks]
-E -->|Setup| F[AWS EC2 VM]
-end
-subgraph "Deployment - Docker Compose"
-F -->|Pull & Run| G[Docker Compose]
-G --> H[Todo App Container]
-G --> I[MongoDB Container]
-J[Watchtower] -->|Monitor & Update| G
-end
-subgraph "Deployment - Kubernetes (Bonus)"
-F --> K[K3s Cluster]
-K --> L[Todo App Pods]
-K --> M[MongoDB Pod]
-N[ArgoCD] -->|GitOps Sync| K
-end
-
 ```mermaid
 graph TB
-    A[Developer] -->|push| B[GitHub Repo]
-    B --> C[GitHub Actions CI]
-    C --> D[Docker Hub]
-    C --> E[Ansible Provisioning]
-    E --> F[AWS EC2 Instance]
-    F --> G[Docker Compose]
-    G --> H[Todo App]
-    G --> I[MongoDB]
-    J[Watchtower] --> D
-    J --> G
 
-    subgraph "Kubernetes (Bonus)"
-        F2[K3s on VM] --> K[ArgoCD]
+    %% Developer Cycle
+    subgraph "Developer Cycle"
+        A[Developer] -->|Push code| B[GitHub Repository]
+    end
+
+    %% CI/CD
+    subgraph "CI/CD"
+        B -->|Trigger| C[GitHub Actions]
+        C -->|Build & Push| D[Docker Registry]
+    end
+
+    %% Infrastructure Provisioning
+    subgraph "Infrastructure Provisioning"
+        C -->|Invoke| E[Ansible Playbooks]
+        E -->|Setup| F[AWS EC2 VM]
+    end
+
+    %% Docker Compose Deployment
+    subgraph "Deployment - Docker Compose"
+        F -->|Pull & Run| G[Docker Compose]
+        G --> H[Todo App Container]
+        G --> I[MongoDB Container]
+        J[Watchtower] -->|Monitor & Update| G
+    end
+
+    %% Kubernetes Bonus Deployment
+    subgraph "Deployment - Kubernetes (Bonus)"
+        F --> K[K3s Cluster]
         K --> L[Todo App Pods]
         K --> M[MongoDB Pod]
+        N[ArgoCD] -->|GitOps Sync| K
     end
 ```
 
