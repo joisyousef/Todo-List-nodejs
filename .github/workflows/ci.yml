@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Run tests (if you have any)
+    - name: Run tests
       run: npm test --if-present
 
   build-and-push:

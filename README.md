@@ -8,9 +8,7 @@
   - [📋 Table of Contents](#-table-of-contents)
   - [🚀 Overview](#-overview)
   - [🏗️ Architecture](#️-architecture)
-  - [🛠️ Prerequisites](#️-prerequisites)
-  - [⚡ Quick Start](#-quick-start)
-  - [📦 Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
+  - [� Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
     - [Docker Implementation](#docker-implementation)
     - [CI/CD Pipeline](#cicd-pipeline)
   - [🔧 Part 2: Infrastructure as Code with Ansible](#-part-2-infrastructure-as-code-with-ansible)
@@ -47,12 +45,15 @@ This repository contains a complete DevOps pipeline implementation for the Node.
 
 ## 🏗️ Architecture
 
-```mermaid
+![alt text](image.png)
+
+<!-- ```mermaid
 graph TB
 
     %% Developer Cycle
     subgraph "Developer Cycle"
         A[Developer] -->|Push code| B[GitHub Repository]
+
     end
 
     %% CI/CD
@@ -87,7 +88,8 @@ graph TB
     %% Registry Connection
     E -.->|Image Updates| K
     E -.->|Image Updates| O
-```
+
+````-->
 
 ## 🛠️ Prerequisites
 
@@ -136,7 +138,7 @@ docker-compose up -d
 ansible-playbook -i inventories/hosts.yml playbooks/kubernetes-setup.yml
 kubectl port-forward -n todo-app svc/todo-app-service 31159:80
 # Then visit: http://localhost:31159
-```
+````
 
 ---
 
