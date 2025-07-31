@@ -8,7 +8,9 @@
   - [📋 Table of Contents](#-table-of-contents)
   - [🚀 Overview](#-overview)
   - [🏗️ Architecture](#️-architecture)
-  - [� Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
+  - [�️ Prerequisites](#️-prerequisites)
+  - [⚡ Quick Start](#-quick-start)
+  - [📦 Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
     - [Docker Implementation](#docker-implementation)
     - [CI/CD Pipeline](#cicd-pipeline)
   - [🔧 Part 2: Infrastructure as Code with Ansible](#-part-2-infrastructure-as-code-with-ansible)
@@ -46,50 +48,6 @@ This repository contains a complete DevOps pipeline implementation for the Node.
 ## 🏗️ Architecture
 
 ![alt text](image.png)
-
-<!-- ```mermaid
-graph TB
-
-    %% Developer Cycle
-    subgraph "Developer Cycle"
-        A[Developer] -->|Push code| B[GitHub Repository]
-
-    end
-
-    %% CI/CD
-    subgraph "CI/CD Pipeline"
-        B -->|Trigger| C[GitHub Actions]
-        C -->|Build & Test| D[Docker Build]
-        D -->|Push| E[Private Docker Registry]
-    end
-
-    %% Infrastructure Provisioning
-    subgraph "Infrastructure Provisioning"
-        C -->|Deploy| F[Ansible Playbooks]
-        F -->|Configure| G[Linux VM - Local/Cloud]
-    end
-
-    %% Docker Compose Deployment
-    subgraph "Production Deployment - Docker Compose"
-        G -->|Pull & Run| H[Docker Compose]
-        H --> I[Todo App Container]
-        H --> J[MongoDB Container]
-        K[Watchtower] -->|Auto-Update| H
-    end
-
-    %% Kubernetes Bonus Deployment
-    subgraph "Bonus Deployment - Kubernetes"
-        G --> L[K3s Cluster]
-        L --> M[Todo App Pods]
-        L --> N[MongoDB Pod]
-        O[ArgoCD] -->|GitOps Sync| L
-    end
-
-    %% Registry Connection
-    E -.->|Image Updates| K
-    E -.->|Image Updates| O
-
-````-->
 
 ## 🛠️ Prerequisites
 
@@ -138,7 +96,7 @@ docker-compose up -d
 ansible-playbook -i inventories/hosts.yml playbooks/kubernetes-setup.yml
 kubectl port-forward -n todo-app svc/todo-app-service 31159:80
 # Then visit: http://localhost:31159
-````
+```
 
 ---
 
