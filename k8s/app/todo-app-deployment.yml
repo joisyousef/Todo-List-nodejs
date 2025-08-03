@@ -20,6 +20,11 @@ spec:
       labels:
         app: todo-app
     spec:
+      # Add init container to wait for MongoDB
+      initContainers:
+      - name: wait-for-mongo
+        image: busybox:1.35
+        command: [ 'sh', '-c', 'until nc -z mongo-service 27017; do echo waiting for mongo; sleep 2; done;' ]
       containers:
       - name: todo-app
         image: joisyousef/todo-app:latest
@@ -37,28 +42,29 @@ spec:
           httpGet:
             path: /
             port: 4000
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60 # Increased delay
           periodSeconds: 30
-          timeoutSeconds: 5
+          timeoutSeconds: 10
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /
             port: 4000
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 3
+          initialDelaySeconds: 30 # Increased delay
+          periodSeconds: 15
+          timeoutSeconds: 5
           failureThreshold: 3
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "64Mi" # Reduced
+            cpu: "50m" # Reduced
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "256Mi" # Reduced
+            cpu: "200m" # Reduced
       imagePullSecrets:
       - name: docker-registry-secret
 ---
+# Todo App Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -73,6 +79,7 @@ spec:
     targetPort: 4000
   type: ClusterIP
 ---
+# NodePort Service
 apiVersion: v1
 kind: Service
 metadata:

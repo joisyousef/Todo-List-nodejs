@@ -18,7 +18,6 @@ spec:
       securityContext:
         runAsUser: 999
         fsGroup: 999
-
       containers:
       - name: mongo
         image: mongo:5.0
@@ -29,15 +28,14 @@ spec:
           value: todolist
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
+            memory: "128Mi" # Reduced from 256Mi
+            cpu: "100m" # Reduced from 250m
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "256Mi" # Reduced from 512Mi
+            cpu: "200m" # Reduced from 500m
         volumeMounts:
         - name: mongo-storage
           mountPath: /data/db
-
         livenessProbe:
           exec:
             command:
@@ -45,11 +43,10 @@ spec:
             - --quiet
             - --eval
             - "db.adminCommand('ping')"
-          initialDelaySeconds: 90
-          timeoutSeconds: 5
-          periodSeconds: 20
-          failureThreshold: 6
-
+          initialDelaySeconds: 120 # Increased delay
+          timeoutSeconds: 10
+          periodSeconds: 30
+          failureThreshold: 3
         readinessProbe:
           exec:
             command:
@@ -57,13 +54,28 @@ spec:
             - --quiet
             - --eval
             - "db.adminCommand('ping')"
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          periodSeconds: 15
-          failureThreshold: 4
+          initialDelaySeconds: 90 # Increased delay
+          timeoutSeconds: 10
+          periodSeconds: 20
+          failureThreshold: 3
       volumes:
       - name: mongo-storage
         persistentVolumeClaim:
           claimName: mongo-pvc
+---
+# MongoDB Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  namespace: todo-app
+spec:
+  selector:
+    app: mongo
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: 27017
+  type: ClusterIP
 ---
 
