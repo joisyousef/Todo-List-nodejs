@@ -1,6 +1,6 @@
 # DevOps Internship Assessment - Todo Application
 
-[![CI/CD Pipeline](https://github.com/joisyousef/Todo-List-nodejs/actions/workflows/ci.yml/badge.svg)](https://github.com/joisyousef/Todo-List-nodejs/actions)
+[![CI/CD Pipeline](https://github.com/joisyousef/todo-app-devops-infra/actions/workflows/ci.yml/badge.svg)](https://github.com/joisyousef/todo-app-devops-infra/actions)
 
 ## 📋 Table of Contents
 
@@ -8,7 +8,7 @@
   - [📋 Table of Contents](#-table-of-contents)
   - [🚀 Overview](#-overview)
   - [🏗️ Architecture](#️-architecture)
-  - [�️ Prerequisites](#️-prerequisites)
+  - [🛠️ Prerequisites](#️-prerequisites)
   - [⚡ Quick Start](#-quick-start)
   - [📦 Part 1: Dockerization \& CI Pipeline](#-part-1-dockerization--ci-pipeline)
     - [Docker Implementation](#docker-implementation)
@@ -43,7 +43,7 @@ This repository contains a complete DevOps pipeline implementation for the Node.
 - **Part 3 (40 points)**: Container orchestration with Docker Compose and automated image updates
 - **Part 4 (50 points - Bonus)**: Kubernetes deployment and GitOps with ArgoCD
 
-**Base Repository**: Cloned and enhanced from [Ankit6098/Todo-List-nodejs](https://github.com/Ankit6098/Todo-List-nodejs)
+**Base Repository**: Cloned and enhanced from [Ankit6098/todo-app-devops-infra](https://github.com/Ankit6098/todo-app-devops-infra)
 
 ## 🏗️ Architecture
 
@@ -63,8 +63,8 @@ This repository contains a complete DevOps pipeline implementation for the Node.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/joisyousef/Todo-List-nodejs.git
-cd Todo-List-nodejs
+git clone https://github.com/joisyousef/todo-app-devops-infra.git
+cd todo-app-devops-infra
 
 # 2. Set up environment
 cp .env.example .env
